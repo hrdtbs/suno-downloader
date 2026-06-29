@@ -1,0 +1,47 @@
+[package]
+name = "suno-downloader"
+version = "0.1.0"
+description = "Download WAV files from Suno library"
+authors = ["you"]
+edition = "2021"
+
+[lib]
+name = "suno_downloader_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-dialog = "2"
+tauri-plugin-opener = "2"
+tauri-plugin-updater = "2"
+tauri-plugin-process = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["full"] }
+reqwest = { version = "0.13", features = ["json", "stream", "blocking"] }
+chrono = { version = "0.4", features = ["serde"] }
+thiserror = "2"
+anyhow = "1"
+regex = "1"
+tiny_http = "0.12"
+dirs = "6"
+walkdir = "2"
+uuid = { version = "1", features = ["v4"] }
+base64 = "0.22"
+
+[lints.rust]
+unsafe_code = "forbid"
+
+[lints.clippy]
+all = "warn"
+pedantic = "warn"
+
+[profile.release]
+panic = "abort"
+codegen-units = 1
+lto = true
+opt-level = "s"
+strip = true
