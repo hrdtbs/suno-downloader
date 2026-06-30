@@ -1,5 +1,7 @@
 import { openUrl } from '@tauri-apps/plugin-opener';
+import { authAllowExtension } from './tauri';
 
-export function openSunoProfile(): Promise<void> {
-  return openUrl('https://suno.com/me');
+export async function openSunoProfile(): Promise<void> {
+  await authAllowExtension();
+  await openUrl('https://suno.com/me');
 }

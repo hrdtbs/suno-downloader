@@ -31,6 +31,10 @@ export async function authLogout(): Promise<void> {
   await invoke('auth_logout');
 }
 
+export async function authAllowExtension(): Promise<void> {
+  await invoke('auth_allow_extension');
+}
+
 export async function tokenServerStatus(): Promise<TokenServerStatus> {
   return invoke<TokenServerStatus>('token_server_status');
 }
@@ -69,6 +73,10 @@ export async function libraryList(
 
 export async function chromeExtensionPath(): Promise<string> {
   return invoke<string>('chrome_extension_path');
+}
+
+export async function chromeExtensionDownload(): Promise<string | null> {
+  return invoke<string | null>('chrome_extension_download');
 }
 
 export function listenSyncProgress(

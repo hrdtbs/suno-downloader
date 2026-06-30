@@ -34,7 +34,9 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
-    "resources": ["../chrome-extension"]
+    "resources": {
+      "../chrome-extension/**/*": "chrome-extension/"
+    }
   },
   "plugins": {
     "updater": {

@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
-import { Alert, Button, NumberInput, Select, Stack, Text, TextInput, Title } from '@mantine/core';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Alert, Button, NumberInput, Select, Stack, Text, TextInput } from '@mantine/core';
 import { open } from '@tauri-apps/plugin-dialog';
 import { settingsGet, settingsSet } from '../lib/tauri';
 import { formatErrorMessage } from '../lib/labels';
+import { DEFAULT_SINCE_FILTER, normalizeSinceFilter, SINCE_FILTER_OPTIONS } from '../lib/defaults';
 import type { AppSettings, OrganizeMode } from '../types';
 
 const organizeOptions = [
@@ -12,17 +13,61 @@ const organizeOptions = [
   { value: 'month-week', label: 'month-week (月/週)' },
 ];
 
+function withSettingsDefaults(settings: AppSettings): AppSettings {
+  return {
+    output_dir: settings.output_dir ?? null,
+    organize: settings.organize ?? 'week',
+    max_pages: settings.max_pages ?? 0,
+    since: normalizeSinceFilter(settings.since),
+  };
+}
+
 export default function SettingsPage() {
   const [settings, setSettings] = useState<AppSettings>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
+  const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const lastSavedRef = useRef<string | null>(null);
+  const settingsRef = useRef(settings);
+  settingsRef.current = settings;
+
+  const saveIfChanged = useCallback(async (options?: { silent?: boolean }) => {
+    const current = settingsRef.current;
+    const serialized = JSON.stringify(current);
+    if (lastSavedRef.current === serialized) {
+      return;
+    }
+
+    if (!options?.silent) {
+      setSaving(true);
+      setSaved(false);
+      setError(null);
+    }
+
+    try {
+      await settingsSet(current);
+      lastSavedRef.current = serialized;
+      if (!options?.silent) {
+        setSaved(true);
+      }
+    } catch (err) {
+      if (!options?.silent) {
+        setError(formatErrorMessage(err));
+      }
+    } finally {
+      if (!options?.silent) {
+        setSaving(false);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     void (async () => {
       try {
-        setSettings(await settingsGet());
+        const loaded = withSettingsDefaults(await settingsGet());
+        setSettings(loaded);
+        lastSavedRef.current = JSON.stringify(loaded);
       } catch (err) {
         setError(formatErrorMessage(err));
       } finally {
@@ -31,24 +76,23 @@ export default function SettingsPage() {
     })();
   }, []);
 
+  useEffect(() => {
+    return () => {
+      void saveIfChanged({ silent: true });
+    };
+  }, [saveIfChanged]);
+
+  function handleBlur() {
+    void saveIfChanged();
+  }
+
   async function handlePickDir() {
     const selected = await open({ directory: true, multiple: false });
     if (typeof selected === 'string') {
-      setSettings((current) => ({ ...current, output_dir: selected }));
-    }
-  }
-
-  async function handleSave() {
-    setSaving(true);
-    setError(null);
-    setMessage(null);
-    try {
-      await settingsSet(settings);
-      setMessage('設定を保存しました。');
-    } catch (err) {
-      setError(formatErrorMessage(err));
-    } finally {
-      setSaving(false);
+      const next = { ...settingsRef.current, output_dir: selected };
+      setSettings(next);
+      settingsRef.current = next;
+      await saveIfChanged();
     }
   }
 
@@ -58,27 +102,32 @@ export default function SettingsPage() {
 
   return (
     <Stack gap="lg" maw={560}>
-      <div>
-        <Title order={2}>設定</Title>
-        <Text c="dimmed" mt="xs">
-          同期のデフォルト動作を設定します。
+      {saving ? (
+        <Text size="sm" c="dimmed">
+          保存中...
         </Text>
-      </div>
+      ) : saved ? (
+        <Text size="sm" c="green">
+          保存済み
+        </Text>
+      ) : null}
 
       <Stack gap="md">
         <TextInput
           label="出力フォルダ"
           value={settings.output_dir ?? ''}
-          onChange={(event) =>
-            setSettings((current) => ({ ...current, output_dir: event.currentTarget.value }))
-          }
+          onChange={(event) => {
+            const output_dir = event.currentTarget.value;
+            setSettings((current) => ({ ...current, output_dir }));
+          }}
+          onBlur={handleBlur}
         />
         <Button variant="light" onClick={handlePickDir}>
           フォルダを選択
         </Button>
 
         <Select
-          label="フォルダ整理 (organize)"
+          label="フォルダ整理"
           data={organizeOptions}
           value={settings.organize ?? 'week'}
           onChange={(value) =>
@@ -87,15 +136,7 @@ export default function SettingsPage() {
               organize: (value as OrganizeMode | null) ?? 'week',
             }))
           }
-        />
-
-        <NumberInput
-          label="WAV 変換リクエスト間隔 (秒)"
-          min={0}
-          value={settings.delay ?? 5}
-          onChange={(value) =>
-            setSettings((current) => ({ ...current, delay: Number(value) || 0 }))
-          }
+          onBlur={handleBlur}
         />
 
         <NumberInput
@@ -105,23 +146,23 @@ export default function SettingsPage() {
           onChange={(value) =>
             setSettings((current) => ({ ...current, max_pages: Number(value) || 0 }))
           }
+          onBlur={handleBlur}
         />
 
-        <TextInput
-          label="since フィルタ (例: 7d, 1w)"
-          placeholder="空欄で無効"
-          value={settings.since ?? ''}
-          onChange={(event) =>
-            setSettings((current) => ({ ...current, since: event.currentTarget.value || null }))
+        <Select
+          label="対象期間"
+          data={[...SINCE_FILTER_OPTIONS]}
+          value={normalizeSinceFilter(settings.since)}
+          onChange={(value) =>
+            setSettings((current) => ({
+              ...current,
+              since: value === null ? DEFAULT_SINCE_FILTER : value,
+            }))
           }
+          onBlur={handleBlur}
         />
-
-        <Button onClick={handleSave} loading={saving}>
-          保存
-        </Button>
       </Stack>
 
-      {message ? <Alert color="green">{message}</Alert> : null}
       {error ? <Alert color="red">{error}</Alert> : null}
     </Stack>
   );

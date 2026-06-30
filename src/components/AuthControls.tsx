@@ -3,6 +3,7 @@ import { Button, Stack, Text } from '@mantine/core';
 import { authLogout } from '../lib/tauri';
 import { formatErrorMessage } from '../lib/labels';
 import type { AuthStatus } from '../types';
+import ChromeExtensionDownloadButton from './ChromeExtensionDownloadButton';
 
 interface Props {
   status: AuthStatus | null;
@@ -39,9 +40,12 @@ export default function AuthControls({ status, onUpdated }: Props) {
           </Button>
         </>
       ) : (
-        <Text size="sm" c="dimmed" ta="right">
-          未認証
-        </Text>
+        <>
+          <Text size="sm" c="dimmed" ta="right">
+            未認証
+          </Text>
+          <ChromeExtensionDownloadButton variant="outline" />
+        </>
       )}
       {error ? (
         <Text size="xs" c="red" ta="right">

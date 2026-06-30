@@ -68,11 +68,14 @@ pub async fn save_session(jwt: &str, device_id: &str) -> anyhow::Result<()> {
 }
 
 pub async fn delete_session() -> anyhow::Result<()> {
-    match tokio::fs::remove_file(session_path()).await {
-        Ok(()) => Ok(()),
-        Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(()),
-        Err(error) => Err(error.into()),
+    for path in [session_path(), cli_session_path(), legacy_session_path()] {
+        match tokio::fs::remove_file(&path).await {
+            Ok(()) => {}
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+            Err(error) => return Err(error.into()),
+        }
     }
+    Ok(())
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

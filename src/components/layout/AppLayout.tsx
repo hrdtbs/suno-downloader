@@ -5,7 +5,6 @@ import type { AuthStatus } from '../../types';
 
 const navItems = [
   { to: '/sync', label: '同期' },
-  { to: '/library', label: 'ライブラリ' },
   { to: '/settings', label: '設定' },
 ];
 

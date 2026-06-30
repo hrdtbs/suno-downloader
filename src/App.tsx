@@ -7,7 +7,6 @@ import type { AuthStatus } from './types';
 import AppLayout from './components/layout/AppLayout';
 import AuthSetupPage from './pages/AuthSetupPage';
 import SyncPage from './pages/SyncPage';
-import LibraryPage from './pages/LibraryPage';
 import SettingsPage from './pages/SettingsPage';
 
 export default function App() {
@@ -52,7 +51,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Navigate to="/sync" replace />} />
         <Route path="/sync" element={<SyncPage />} />
-        <Route path="/library" element={<LibraryPage />} />
+        <Route path="/library" element={<Navigate to="/sync" replace />} />
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="*" element={<Navigate to="/sync" replace />} />
       </Routes>

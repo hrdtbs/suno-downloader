@@ -1,7 +1,10 @@
 use std::sync::atomic::Ordering;
 
 use tauri::State;
+use tauri_plugin_dialog::DialogExt;
 use uuid::Uuid;
+
+use crate::chrome_extension;
 
 use crate::config::paths::token_server_url;
 use crate::config::session::{
@@ -21,12 +24,13 @@ pub async fn init_app(state: State<'_, AppState>) -> Result<(), String> {
     state
         .token_server
         .start()
+        .await
         .map_err(|error| error.to_string())
 }
 
 #[tauri::command]
 pub async fn auth_status(_state: State<'_, AppState>) -> Result<AuthStatus, String> {
-    let token_status = TokenServerManager::status();
+    let token_status = TokenServerManager::status().await;
     let session = try_load_session().await;
 
     Ok(AuthStatus {
@@ -42,6 +46,7 @@ pub async fn auth_manual(
     token: String,
     device_id: Option<String>,
     skip_verify: Option<bool>,
+    state: State<'_, AppState>,
 ) -> Result<(), String> {
     let jwt = normalize_token(&token);
     if jwt.is_empty() {
@@ -61,17 +66,28 @@ pub async fn auth_manual(
 
     save_session(&jwt, &resolved_device_id)
         .await
+        .map_err(|error| error.to_string())?;
+    state.block_extension_auth.store(false, Ordering::Relaxed);
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn auth_logout(state: State<'_, AppState>) -> Result<(), String> {
+    state.block_extension_auth.store(true, Ordering::Relaxed);
+    delete_session()
+        .await
         .map_err(|error| error.to_string())
 }
 
 #[tauri::command]
-pub async fn auth_logout() -> Result<(), String> {
-    delete_session().await.map_err(|error| error.to_string())
+pub async fn auth_allow_extension(state: State<'_, AppState>) -> Result<(), String> {
+    state.block_extension_auth.store(false, Ordering::Relaxed);
+    Ok(())
 }
 
 #[tauri::command]
 pub async fn token_server_status(_state: State<'_, AppState>) -> Result<TokenServerStatus, String> {
-    Ok(TokenServerManager::status())
+    Ok(TokenServerManager::status().await)
 }
 
 #[tauri::command]
@@ -122,18 +138,26 @@ pub async fn library_list_cmd(
 #[tauri::command]
 #[allow(clippy::needless_pass_by_value)]
 pub fn chrome_extension_path(app: tauri::AppHandle) -> Result<String, String> {
-    use tauri::Manager;
+    chrome_extension::resolve_dir(&app).map(|path| path.to_string_lossy().to_string())
+}
 
-    if let Ok(resource) = app.path().resource_dir() {
-        let ext = resource.join("chrome-extension");
-        if ext.exists() {
-            return Ok(ext.to_string_lossy().to_string());
-        }
-    }
+#[tauri::command]
+pub async fn chrome_extension_download(app: tauri::AppHandle) -> Result<Option<String>, String> {
+    let ext_dir = chrome_extension::resolve_dir(&app)?;
 
-    Ok(std::env::current_dir()
-        .map_err(|error| error.to_string())?
-        .join("chrome-extension")
-        .to_string_lossy()
-        .to_string())
+    let dest = app
+        .dialog()
+        .file()
+        .set_title("Chrome拡張機能を保存")
+        .set_file_name("suno-downloader-chrome-extension.zip")
+        .add_filter("ZIP アーカイブ", &["zip"])
+        .blocking_save_file();
+
+    let Some(dest) = dest else {
+        return Ok(None);
+    };
+
+    let dest_path = dest.into_path().map_err(|error| error.to_string())?;
+    chrome_extension::zip_directory(&ext_dir, &dest_path)?;
+    Ok(Some(dest_path.to_string_lossy().to_string()))
 }

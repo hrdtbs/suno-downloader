@@ -2,19 +2,16 @@ use std::path::Path;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 
-use chrono::{DateTime, Utc};
 use tauri::{AppHandle, Emitter};
 
-use crate::config::date_filters::{is_clip_created_after, resolve_since_cutoff};
+use crate::config::date_filters::{is_clip_created_after, resolve_since_cutoff_optional};
 use crate::config::date_folders::resolve_clip_output_dir;
 use crate::config::filenames::build_wav_filename;
 use crate::config::local_index::{
     build_local_clip_index, clip_path, list_wav_filenames, mark_clip_downloaded,
 };
 use crate::config::session::load_session;
-use crate::config::settings::{
-    default_delay, default_max_pages, default_organize, resolve_output_dir,
-};
+use crate::config::settings::{default_max_pages, default_organize, resolve_output_dir};
 use crate::suno::api::{
     fetch_all_clips, fetch_wav_for_clip, resolve_wav_source, save_wav_file, FetchClipsOptions,
 };
@@ -50,10 +47,7 @@ pub async fn library_list(
         .await
         .map_err(|error| error.to_string())?;
 
-    let since_cutoff = since
-        .as_deref()
-        .map(resolve_since_cutoff)
-        .transpose()
+    let since_cutoff = resolve_since_cutoff_optional(since.as_deref())
         .map_err(|error| error.to_string())?;
 
     let clips = fetch_all_clips(
@@ -116,7 +110,6 @@ async fn run_sync_internal(
         .await
         .map_err(|error| error.to_string())?;
 
-    let delay_seconds = options.delay.unwrap_or_else(|| default_delay(&settings));
     let max_pages = options
         .max_pages
         .unwrap_or_else(|| default_max_pages(&settings));
@@ -125,13 +118,13 @@ async fn run_sync_internal(
         .clone()
         .unwrap_or_else(|| default_organize(&settings));
 
-    let since_cutoff: Option<DateTime<Utc>> = options
-        .since
-        .as_deref()
-        .or(settings.since.as_deref())
-        .map(resolve_since_cutoff)
-        .transpose()
-        .map_err(|error| error.to_string())?;
+    let since_cutoff = resolve_since_cutoff_optional(
+        options
+            .since
+            .as_deref()
+            .or(settings.since.as_deref()),
+    )
+    .map_err(|error| error.to_string())?;
 
     let session = load_session().await.map_err(|error| error.to_string())?;
     tokio::fs::create_dir_all(&output_dir)
@@ -144,6 +137,7 @@ async fn run_sync_internal(
 
     let mut summary = SyncSummary::default();
     let mut preview_items = Vec::new();
+    let mut conversions_done = 0u32;
 
     let clips = fetch_all_clips(
         &session,
@@ -154,6 +148,11 @@ async fn run_sync_internal(
     )
     .await
     .map_err(|error| error.to_string())?;
+
+    let pending_estimate = clips
+        .iter()
+        .filter(|clip| !local_ids.contains(&clip.id.to_lowercase()))
+        .count() as u32;
 
     for clip in clips {
         if cancel_flag.load(Ordering::Relaxed) {
@@ -240,11 +239,15 @@ async fn run_sync_internal(
             &target_dir,
             Path::new(&output_dir),
             &mut local_ids,
-            delay_seconds,
+            conversions_done,
+            pending_estimate,
         )
         .await
         {
-            Ok(path) => {
+            Ok((path, converted)) => {
+                if converted {
+                    conversions_done += 1;
+                }
                 summary.downloaded += 1;
                 if let Some(app) = &app {
                     emit_progress(
@@ -283,6 +286,27 @@ async fn run_sync_internal(
     Ok((summary, preview_items))
 }
 
+fn wav_conversion_delay_secs(conversions_done: u32, pending_estimate: u32) -> u64 {
+    let nanos = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_nanos() as u64;
+
+    let batch_extra = match pending_estimate {
+        0..=15 => 0,
+        16..=40 => 3,
+        41..=80 => 6,
+        _ => 10,
+    };
+    let progress_extra = (u64::from(conversions_done) / 5).min(20);
+    let extra = batch_extra + progress_extra;
+
+    let min = 5 + extra;
+    let max = 10 + extra + 5;
+    let span = max - min + 1;
+    min + (nanos % span)
+}
+
 async fn download_clip(
     session: &crate::suno::types::SessionData,
     clip: &crate::suno::types::Clip,
@@ -290,11 +314,13 @@ async fn download_clip(
     target_dir: &Path,
     output_dir: &Path,
     local_ids: &mut std::collections::HashSet<String>,
-    delay_seconds: u32,
-) -> Result<String, AuthError> {
+    conversions_done: u32,
+    pending_estimate: u32,
+) -> Result<(String, bool), AuthError> {
     let (_, needs_conversion) = resolve_wav_source(clip).await;
-    if needs_conversion && delay_seconds > 0 {
-        tokio::time::sleep(std::time::Duration::from_secs(u64::from(delay_seconds))).await;
+    if needs_conversion {
+        let delay_secs = wav_conversion_delay_secs(conversions_done, pending_estimate);
+        tokio::time::sleep(std::time::Duration::from_secs(delay_secs)).await;
     }
 
     let wav_data = fetch_wav_for_clip(session, clip).await?;
@@ -314,7 +340,7 @@ async fn download_clip(
         .await
         .map_err(|error| AuthError::Message(error.to_string()))?;
 
-    Ok(output_path.to_string_lossy().to_string())
+    Ok((output_path.to_string_lossy().to_string(), needs_conversion))
 }
 
 pub fn request_sync_cancel(cancel_flag: &Arc<AtomicBool>) {
