@@ -47,8 +47,8 @@ pub async fn library_list(
         .await
         .map_err(|error| error.to_string())?;
 
-    let since_cutoff = resolve_since_cutoff_optional(since.as_deref())
-        .map_err(|error| error.to_string())?;
+    let since_cutoff =
+        resolve_since_cutoff_optional(since.as_deref()).map_err(|error| error.to_string())?;
 
     let clips = fetch_all_clips(
         &session,
@@ -118,13 +118,9 @@ async fn run_sync_internal(
         .clone()
         .unwrap_or_else(|| default_organize(&settings));
 
-    let since_cutoff = resolve_since_cutoff_optional(
-        options
-            .since
-            .as_deref()
-            .or(settings.since.as_deref()),
-    )
-    .map_err(|error| error.to_string())?;
+    let since_cutoff =
+        resolve_since_cutoff_optional(options.since.as_deref().or(settings.since.as_deref()))
+            .map_err(|error| error.to_string())?;
 
     let session = load_session().await.map_err(|error| error.to_string())?;
     tokio::fs::create_dir_all(&output_dir)
@@ -149,10 +145,13 @@ async fn run_sync_internal(
     .await
     .map_err(|error| error.to_string())?;
 
-    let pending_estimate = clips
-        .iter()
-        .filter(|clip| !local_ids.contains(&clip.id.to_lowercase()))
-        .count() as u32;
+    let pending_estimate = u32::try_from(
+        clips
+            .iter()
+            .filter(|clip| !local_ids.contains(&clip.id.to_lowercase()))
+            .count(),
+    )
+    .unwrap_or(u32::MAX);
 
     for clip in clips {
         if cancel_flag.load(Ordering::Relaxed) {
@@ -287,10 +286,13 @@ async fn run_sync_internal(
 }
 
 fn wav_conversion_delay_secs(conversions_done: u32, pending_estimate: u32) -> u64 {
-    let nanos = std::time::SystemTime::now()
-        .duration_since(std::time::UNIX_EPOCH)
-        .unwrap_or_default()
-        .as_nanos() as u64;
+    let nanos = u64::try_from(
+        std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap_or_default()
+            .as_nanos(),
+    )
+    .unwrap_or(0);
 
     let batch_extra = match pending_estimate {
         0..=15 => 0,
@@ -307,6 +309,7 @@ fn wav_conversion_delay_secs(conversions_done: u32, pending_estimate: u32) -> u6
     min + (nanos % span)
 }
 
+#[allow(clippy::too_many_arguments)]
 async fn download_clip(
     session: &crate::suno::types::SessionData,
     clip: &crate::suno::types::Clip,

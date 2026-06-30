@@ -38,9 +38,7 @@ pub fn resolve_since_cutoff(since: &str) -> anyhow::Result<DateTime<Utc>> {
     Ok(cutoff)
 }
 
-pub fn resolve_since_cutoff_optional(
-    since: Option<&str>,
-) -> anyhow::Result<Option<DateTime<Utc>>> {
+pub fn resolve_since_cutoff_optional(since: Option<&str>) -> anyhow::Result<Option<DateTime<Utc>>> {
     match since.map(str::trim).filter(|value| !value.is_empty()) {
         None => Ok(None),
         Some(value) => resolve_since_cutoff(value).map(Some),

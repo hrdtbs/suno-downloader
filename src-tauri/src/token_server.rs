@@ -86,10 +86,9 @@ impl TokenServerManager {
                 Ok(body) => body
                     .get("service")
                     .and_then(|value| value.as_str())
-                    .map(|service| {
+                    .is_some_and(|service| {
                         service == SERVICE_NAME || service == "suno" || service == "suno-sync-mini"
-                    })
-                    .unwrap_or(false),
+                    }),
                 Err(_) => false,
             },
             Err(_) => false,

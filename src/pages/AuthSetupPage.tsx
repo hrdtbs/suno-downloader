@@ -24,7 +24,7 @@ interface Props {
 
 export default function AuthSetupPage({ onAuthenticated }: Props) {
   const [status, setStatus] = useState<AuthStatus | null>(null);
-  const [checking, setChecking] = useState(false);
+  const [checking, setChecking] = useState(true);
   const [continuing, setContinuing] = useState(false);
   const [extensionLoginPending, setExtensionLoginPending] = useState(false);
   const [lastCheckedAt, setLastCheckedAt] = useState<Date | null>(null);
@@ -71,8 +71,26 @@ export default function AuthSetupPage({ onAuthenticated }: Props) {
   }, [checkStatus, onAuthenticated]);
 
   useEffect(() => {
-    void refreshStatus();
-  }, [refreshStatus]);
+    let cancelled = false;
+
+    void (async () => {
+      try {
+        await checkStatus();
+      } catch (err) {
+        if (!cancelled) {
+          setError(formatErrorMessage(err));
+        }
+      } finally {
+        if (!cancelled) {
+          setChecking(false);
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [checkStatus]);
 
   useEffect(() => {
     if (!extensionLoginPending) {

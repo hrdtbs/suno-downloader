@@ -30,7 +30,10 @@ export default function SettingsPage() {
   const [error, setError] = useState<string | null>(null);
   const lastSavedRef = useRef<string | null>(null);
   const settingsRef = useRef(settings);
-  settingsRef.current = settings;
+
+  useEffect(() => {
+    settingsRef.current = settings;
+  }, [settings]);
 
   const saveIfChanged = useCallback(async (options?: { silent?: boolean }) => {
     const current = settingsRef.current;
@@ -91,7 +94,6 @@ export default function SettingsPage() {
     if (typeof selected === 'string') {
       const next = { ...settingsRef.current, output_dir: selected };
       setSettings(next);
-      settingsRef.current = next;
       await saveIfChanged();
     }
   }

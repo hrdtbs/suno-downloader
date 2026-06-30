@@ -3,7 +3,7 @@ import { Button, type ButtonProps, Text } from '@mantine/core';
 import { chromeExtensionDownload } from '../lib/tauri';
 import { formatErrorMessage } from '../lib/labels';
 
-interface Props extends Pick<ButtonProps, 'variant' | 'size' | 'fullWidth'> {}
+type Props = Pick<ButtonProps, 'variant' | 'size' | 'fullWidth'>;
 
 export default function ChromeExtensionDownloadButton({
   variant = 'light',

@@ -74,9 +74,7 @@ pub async fn auth_manual(
 #[tauri::command]
 pub async fn auth_logout(state: State<'_, AppState>) -> Result<(), String> {
     state.block_extension_auth.store(true, Ordering::Relaxed);
-    delete_session()
-        .await
-        .map_err(|error| error.to_string())
+    delete_session().await.map_err(|error| error.to_string())
 }
 
 #[tauri::command]

@@ -26,7 +26,10 @@ pub fn resolve_dir(app: &tauri::AppHandle) -> Result<PathBuf, String> {
         candidates.push(path);
     }
 
-    if let Ok(path) = app.path().resolve("chrome-extension", BaseDirectory::Resource) {
+    if let Ok(path) = app
+        .path()
+        .resolve("chrome-extension", BaseDirectory::Resource)
+    {
         candidates.push(path);
     }
 
@@ -81,8 +84,7 @@ pub fn zip_directory(source_dir: &Path, dest_file: &Path) -> Result<(), String> 
             source
                 .read_to_end(&mut buffer)
                 .map_err(|error| error.to_string())?;
-            zip.write_all(&buffer)
-                .map_err(|error| error.to_string())?;
+            zip.write_all(&buffer).map_err(|error| error.to_string())?;
         } else if path.is_dir() {
             zip.add_directory(format!("{name}/"), options)
                 .map_err(|error| error.to_string())?;

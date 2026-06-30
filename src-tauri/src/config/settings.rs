@@ -16,6 +16,27 @@ pub async fn save_settings(settings: &AppSettings) -> anyhow::Result<()> {
     Ok(())
 }
 
+pub async fn resolve_output_dir(explicit: Option<&str>) -> anyhow::Result<String> {
+    if let Some(dir) = explicit {
+        return Ok(dir.to_string());
+    }
+
+    let settings = load_settings().await?;
+    if let Some(dir) = settings.output_dir {
+        return Ok(dir);
+    }
+
+    Ok(default_output_dir())
+}
+
+pub fn default_organize(settings: &AppSettings) -> OrganizeMode {
+    settings.organize.clone().unwrap_or(OrganizeMode::Week)
+}
+
+pub fn default_max_pages(settings: &AppSettings) -> u32 {
+    settings.max_pages.unwrap_or(0)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -50,32 +71,12 @@ mod tests {
         };
 
         let json = serde_json::to_string(&settings).expect("settings should serialize");
-        let restored: AppSettings = serde_json::from_str(&json).expect("settings should deserialize");
+        let restored: AppSettings =
+            serde_json::from_str(&json).expect("settings should deserialize");
         assert_eq!(restored.output_dir, settings.output_dir);
         assert_eq!(restored.organize, settings.organize);
         assert_eq!(restored.delay, settings.delay);
         assert_eq!(restored.max_pages, settings.max_pages);
         assert_eq!(restored.since, settings.since);
     }
-}
-
-pub async fn resolve_output_dir(explicit: Option<&str>) -> anyhow::Result<String> {
-    if let Some(dir) = explicit {
-        return Ok(dir.to_string());
-    }
-
-    let settings = load_settings().await?;
-    if let Some(dir) = settings.output_dir {
-        return Ok(dir);
-    }
-
-    Ok(default_output_dir())
-}
-
-pub fn default_organize(settings: &AppSettings) -> OrganizeMode {
-    settings.organize.clone().unwrap_or(OrganizeMode::Week)
-}
-
-pub fn default_max_pages(settings: &AppSettings) -> u32 {
-    settings.max_pages.unwrap_or(0)
 }
