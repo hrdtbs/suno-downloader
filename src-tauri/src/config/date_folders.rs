@@ -59,13 +59,3 @@ pub fn resolve_clip_output_dir(
         OrganizeMode::Flat => base_dir.to_path_buf(),
     }
 }
-
-pub fn parse_organize_mode(value: &str) -> anyhow::Result<OrganizeMode> {
-    match value {
-        "flat" => Ok(OrganizeMode::Flat),
-        "month" => Ok(OrganizeMode::Month),
-        "week" => Ok(OrganizeMode::Week),
-        "month-week" => Ok(OrganizeMode::MonthWeek),
-        _ => anyhow::bail!("Invalid organize value: {value}"),
-    }
-}

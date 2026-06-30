@@ -25,10 +25,7 @@ pub fn build_headers(session: &SessionData) -> anyhow::Result<HeaderMap> {
         AUTHORIZATION,
         HeaderValue::from_str(&format!("Bearer {}", session.jwt))?,
     );
-    headers.insert(
-        "device-id",
-        HeaderValue::from_str(&session.device_id)?,
-    );
+    headers.insert("device-id", HeaderValue::from_str(&session.device_id)?);
     headers.insert(
         "browser-token",
         HeaderValue::from_str(&build_browser_token())?,

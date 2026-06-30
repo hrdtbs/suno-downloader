@@ -3,16 +3,17 @@ use std::sync::atomic::Ordering;
 use tauri::State;
 use uuid::Uuid;
 
+use crate::config::paths::token_server_url;
 use crate::config::session::{
     delete_session, load_session, normalize_token, save_session, try_load_session, AuthStatus,
 };
 use crate::config::settings::{load_settings, save_settings};
-use crate::config::paths::token_server_url;
 use crate::suno::auth::verify_session;
 use crate::suno::sync::{library_list, request_sync_cancel, sync_preview, sync_run};
 use crate::suno::types::{
     AppSettings, LibraryListResult, SyncOptions, SyncPreviewResult, SyncSummary, TokenServerStatus,
 };
+use crate::token_server::TokenServerManager;
 use crate::AppState;
 
 #[tauri::command]
@@ -24,8 +25,8 @@ pub async fn init_app(state: State<'_, AppState>) -> Result<(), String> {
 }
 
 #[tauri::command]
-pub async fn auth_status(state: State<'_, AppState>) -> Result<AuthStatus, String> {
-    let token_status = state.token_server.status();
+pub async fn auth_status(_state: State<'_, AppState>) -> Result<AuthStatus, String> {
+    let token_status = TokenServerManager::status();
     let session = try_load_session().await;
 
     Ok(AuthStatus {
@@ -65,14 +66,12 @@ pub async fn auth_manual(
 
 #[tauri::command]
 pub async fn auth_logout() -> Result<(), String> {
-    delete_session()
-        .await
-        .map_err(|error| error.to_string())
+    delete_session().await.map_err(|error| error.to_string())
 }
 
 #[tauri::command]
-pub async fn token_server_status(state: State<'_, AppState>) -> Result<TokenServerStatus, String> {
-    Ok(state.token_server.status())
+pub async fn token_server_status(_state: State<'_, AppState>) -> Result<TokenServerStatus, String> {
+    Ok(TokenServerManager::status())
 }
 
 #[tauri::command]
@@ -100,9 +99,7 @@ pub async fn sync_cancel(state: State<'_, AppState>) -> Result<(), String> {
 
 #[tauri::command]
 pub async fn settings_get() -> Result<AppSettings, String> {
-    load_settings()
-        .await
-        .map_err(|error| error.to_string())
+    load_settings().await.map_err(|error| error.to_string())
 }
 
 #[tauri::command]
@@ -123,6 +120,7 @@ pub async fn library_list_cmd(
 }
 
 #[tauri::command]
+#[allow(clippy::needless_pass_by_value)]
 pub fn chrome_extension_path(app: tauri::AppHandle) -> Result<String, String> {
     use tauri::Manager;
 

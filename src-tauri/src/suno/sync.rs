@@ -20,8 +20,8 @@ use crate::suno::api::{
 };
 use crate::suno::auth::AuthError;
 use crate::suno::types::{
-    LibraryClip, LibraryListResult, SyncOptions, SyncPreviewItem, SyncPreviewResult, SyncProgressEvent,
-    SyncSummary,
+    LibraryClip, LibraryListResult, SyncOptions, SyncPreviewItem, SyncPreviewResult,
+    SyncProgressEvent, SyncSummary,
 };
 
 fn emit_progress(app: &AppHandle, event: SyncProgressEvent) {
@@ -71,8 +71,7 @@ pub async fn library_list(
         .filter(|clip| {
             since_cutoff
                 .as_ref()
-                .map(|cutoff| is_clip_created_after(clip, cutoff))
-                .unwrap_or(true)
+                .is_none_or(|cutoff| is_clip_created_after(clip, cutoff))
         })
         .map(|clip| LibraryClip {
             id: clip.id.clone(),
@@ -103,13 +102,13 @@ pub async fn sync_run(
     Ok(summary)
 }
 
+#[allow(clippy::too_many_lines)]
 async fn run_sync_internal(
     app: Option<AppHandle>,
     options: SyncOptions,
     dry_run: bool,
     cancel_flag: &Arc<AtomicBool>,
 ) -> Result<(SyncSummary, Vec<SyncPreviewItem>), String> {
-
     let output_dir = resolve_output_dir(options.dir.as_deref())
         .await
         .map_err(|error| error.to_string())?;
@@ -118,7 +117,9 @@ async fn run_sync_internal(
         .map_err(|error| error.to_string())?;
 
     let delay_seconds = options.delay.unwrap_or_else(|| default_delay(&settings));
-    let max_pages = options.max_pages.unwrap_or_else(|| default_max_pages(&settings));
+    let max_pages = options
+        .max_pages
+        .unwrap_or_else(|| default_max_pages(&settings));
     let organize = options
         .organize
         .clone()
@@ -170,8 +171,10 @@ async fn run_sync_internal(
         let display_path = target_dir
             .join(format!("{title}.wav"))
             .strip_prefix(&output_dir)
-            .map(|path| path.to_string_lossy().to_string())
-            .unwrap_or_else(|_| format!("{title}.wav"));
+            .map_or_else(
+                |_| format!("{title}.wav"),
+                |path| path.to_string_lossy().to_string(),
+            );
 
         if local_ids.contains(&clip_id) {
             summary.skipped += 1;

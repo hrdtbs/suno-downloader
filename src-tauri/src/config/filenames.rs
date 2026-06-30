@@ -1,6 +1,7 @@
 use std::collections::HashSet;
 
 const INVALID_CHARS: &str = r#"/<>:"/\|?*"#;
+const MAX_FILENAME_LENGTH: usize = 120;
 
 pub fn sanitize_filename(title: &str) -> String {
     let mut cleaned = String::new();
@@ -18,12 +19,16 @@ pub fn sanitize_filename(title: &str) -> String {
         return "untitled".to_string();
     }
 
-    const MAX_LENGTH: usize = 120;
-    if cleaned.chars().count() <= MAX_LENGTH {
+    if cleaned.chars().count() <= MAX_FILENAME_LENGTH {
         return cleaned.to_string();
     }
 
-    cleaned.chars().take(MAX_LENGTH).collect::<String>().trim().to_string()
+    cleaned
+        .chars()
+        .take(MAX_FILENAME_LENGTH)
+        .collect::<String>()
+        .trim()
+        .to_string()
 }
 
 pub fn build_wav_filename(title: &str, existing_filenames: &HashSet<String>) -> String {

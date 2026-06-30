@@ -32,9 +32,7 @@ pub fn resolve_since_cutoff(since: &str) -> anyhow::Result<DateTime<Utc>> {
 }
 
 pub fn is_clip_created_after(clip: &Clip, cutoff: &DateTime<Utc>) -> bool {
-    parse_created_at(clip)
-        .map(|created| created >= *cutoff)
-        .unwrap_or(false)
+    parse_created_at(clip).is_some_and(|created| created >= *cutoff)
 }
 
 pub fn should_stop_feed_paging(clips: &[Clip], created_after: &DateTime<Utc>) -> bool {

@@ -89,7 +89,9 @@ async fn api_fetch(
         format!("{API_BASE}{path}")
     };
 
-    let mut request = client.request(method, url).headers(build_headers(session).map_err(|error| AuthError::Message(error.to_string()))?);
+    let mut request = client
+        .request(method, url)
+        .headers(build_headers(session).map_err(|error| AuthError::Message(error.to_string()))?);
 
     if let Some(payload) = body {
         request = request
@@ -373,7 +375,7 @@ async fn wait_for_wav_url(
     session: &SessionData,
     clip_id: &str,
 ) -> Result<Option<String>, AuthError> {
-    let deadline = tokio::time::Instant::now() + Duration::from_secs(120);
+    let deadline = tokio::time::Instant::now() + Duration::from_mins(2);
 
     while tokio::time::Instant::now() < deadline {
         let response = api_fetch(
@@ -452,10 +454,7 @@ async fn request_wav_conversion(
     wait_for_wav_url(client, session, clip_id).await
 }
 
-pub async fn fetch_wav_for_clip(
-    session: &SessionData,
-    clip: &Clip,
-) -> Result<Vec<u8>, AuthError> {
+pub async fn fetch_wav_for_clip(session: &SessionData, clip: &Clip) -> Result<Vec<u8>, AuthError> {
     let client = Client::new();
     let clip_id = &clip.id;
     let mut wav_url = find_wav_url_in_clip(clip);

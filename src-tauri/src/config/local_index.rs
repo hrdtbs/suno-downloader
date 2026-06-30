@@ -40,7 +40,7 @@ async fn read_index_file_at(output_dir: &Path, filename: &str) -> anyhow::Result
     Ok(ids)
 }
 
-fn scan_legacy_filenames(output_dir: &Path) -> anyhow::Result<HashSet<String>> {
+fn scan_legacy_filenames(output_dir: &Path) -> HashSet<String> {
     let mut ids = HashSet::new();
 
     for entry in WalkDir::new(output_dir)
@@ -60,10 +60,13 @@ fn scan_legacy_filenames(output_dir: &Path) -> anyhow::Result<HashSet<String>> {
         }
     }
 
-    Ok(ids)
+    ids
 }
 
-pub async fn persist_clip_index(output_dir: &Path, clip_ids: &HashSet<String>) -> anyhow::Result<()> {
+pub async fn persist_clip_index(
+    output_dir: &Path,
+    clip_ids: &HashSet<String>,
+) -> anyhow::Result<()> {
     let mut sorted: Vec<String> = clip_ids.iter().cloned().collect();
     sorted.sort();
 
@@ -81,7 +84,7 @@ pub async fn build_local_clip_index(output_dir: &Path) -> anyhow::Result<HashSet
 
     let from_index = read_index_file_at(output_dir, INDEX_FILENAME).await?;
     let from_legacy_index = read_index_file_at(output_dir, LEGACY_INDEX_FILENAME).await?;
-    let from_legacy_files = scan_legacy_filenames(output_dir)?;
+    let from_legacy_files = scan_legacy_filenames(output_dir);
 
     let merged: HashSet<String> = from_index
         .iter()

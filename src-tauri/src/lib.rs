@@ -13,6 +13,9 @@ pub struct AppState {
     pub sync_cancel: Arc<AtomicBool>,
 }
 
+/// # Panics
+///
+/// Panics if the Tauri application fails to start.
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()

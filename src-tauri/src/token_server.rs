@@ -56,12 +56,12 @@ impl TokenServerManager {
         }
 
         let device_id = Arc::clone(&self.device_id);
-        let handle = thread::spawn(move || run_token_server(device_id));
+        let handle = thread::spawn(move || run_token_server(&device_id));
         *guard = Some(handle);
         Ok(())
     }
 
-    pub fn status(&self) -> TokenServerStatus {
+    pub fn status() -> TokenServerStatus {
         let running = reqwest::blocking::Client::new()
             .get(format!("{}/status", token_server_url()))
             .timeout(std::time::Duration::from_millis(1500))
@@ -72,9 +72,7 @@ impl TokenServerManager {
                 body.get("service")
                     .and_then(|value| value.as_str())
                     .map(|service| {
-                        service == SERVICE_NAME
-                            || service == "suno"
-                            || service == "suno-sync-mini"
+                        service == SERVICE_NAME || service == "suno" || service == "suno-sync-mini"
                     })
             })
             .unwrap_or(false);
@@ -87,7 +85,7 @@ impl TokenServerManager {
     }
 }
 
-fn run_token_server(device_id: Arc<Mutex<String>>) {
+fn run_token_server(device_id: &Arc<Mutex<String>>) {
     let address = format!("{TOKEN_SERVER_HOST}:{TOKEN_SERVER_PORT}");
     let server = match Server::http(&address) {
         Ok(server) => server,
@@ -98,7 +96,7 @@ fn run_token_server(device_id: Arc<Mutex<String>>) {
     };
 
     for request in server.incoming_requests() {
-        if let Err(error) = handle_request(request, &device_id) {
+        if let Err(error) = handle_request(request, device_id) {
             eprintln!("Token server error: {error}");
         }
     }
@@ -139,12 +137,11 @@ fn handle_request(mut request: Request, device_id: &Arc<Mutex<String>>) -> anyho
             .unwrap_or_else(|| {
                 device_id
                     .lock()
-                    .map(|guard| guard.clone())
-                    .unwrap_or_else(|_| Uuid::new_v4().to_string())
+                    .map_or_else(|_| Uuid::new_v4().to_string(), |guard| guard.clone())
             });
 
         if let Ok(mut guard) = device_id.lock() {
-            *guard = resolved_device_id.clone();
+            guard.clone_from(&resolved_device_id);
         }
 
         let rt = tokio::runtime::Runtime::new()?;
@@ -171,7 +168,5 @@ fn json_response(status: StatusCode, body: &str) -> Response<std::io::Cursor<Vec
         .with_header(
             Header::from_bytes("Access-Control-Allow-Methods", "GET, POST, OPTIONS").unwrap(),
         )
-        .with_header(
-            Header::from_bytes("Access-Control-Allow-Headers", "Content-Type").unwrap(),
-        )
+        .with_header(Header::from_bytes("Access-Control-Allow-Headers", "Content-Type").unwrap())
 }
