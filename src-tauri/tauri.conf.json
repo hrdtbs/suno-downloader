@@ -40,7 +40,7 @@
   },
   "plugins": {
     "updater": {
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEU3MDNBNzlGNDg2MEZDODMKUldTRC9HQkluNmNENTUzQm53bVFnazhJaUpiRTBLT2xsaGVmeXpWZDk2VFczWkRlNVF6RnYyMWoK",
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEMwNEY5MTk0MDA0OTQwMUYKUldRZlFFa0FsSkZQd1AraVBYRkN4UWZSUFJ5bmdjY3J2N2hkYnF6R3VCYUxhdlk4Mk5KdUkzcWUK",
       "endpoints": [
         "https://github.com/hrdtbs/suno-downloader/releases/latest/download/latest.json"
       ],
