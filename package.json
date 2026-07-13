@@ -44,7 +44,7 @@
     "eslint-plugin-react-hooks": "7.1.1",
     "eslint-plugin-react-refresh": "0.5.3",
     "lefthook": "2.1.9",
-    "postcss": "8.5.16",
+    "postcss": "8.5.17",
     "postcss-preset-mantine": "1.18.0",
     "postcss-simple-vars": "7.0.1",
     "prettier": "3.9.4",
