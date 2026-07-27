@@ -30,7 +30,7 @@ tiny_http = "0.12"
 dirs = "6"
 walkdir = "2"
 uuid = { version = "1", features = ["v4"] }
-base64 = "0.22"
+base64 = "0.23"
 zip = "8"
 
 [lints.rust]
