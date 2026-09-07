@@ -62,7 +62,7 @@ importers:
         version: 19.2.7(@types/react@19.2.18)
       '@vitejs/plugin-react':
         specifier: 6.1.1
-        version: 6.1.1(vite@8.2.2(sugarss@5.0.1(postcss@8.5.26)))
+        version: 6.1.1(vite@8.2.2(sugarss@5.0.1(postcss@8.5.28)))
       eslint:
         specifier: 10.10.0
         version: 10.10.0
@@ -76,14 +76,14 @@ importers:
         specifier: 2.1.12
         version: 2.1.12
       postcss:
-        specifier: 8.5.26
-        version: 8.5.26
+        specifier: 8.5.28
+        version: 8.5.28
       postcss-preset-mantine:
         specifier: 1.18.0
-        version: 1.18.0(postcss@8.5.26)
+        version: 1.18.0(postcss@8.5.28)
       postcss-simple-vars:
         specifier: 7.0.1
-        version: 7.0.1(postcss@8.5.26)
+        version: 7.0.1(postcss@8.5.28)
       prettier:
         specifier: 3.9.6
         version: 3.9.6
@@ -95,7 +95,7 @@ importers:
         version: 8.68.0(eslint@10.10.0)(typescript@6.0.3)
       vite:
         specifier: 8.2.2
-        version: 8.2.2(sugarss@5.0.1(postcss@8.5.26))
+        version: 8.2.2(sugarss@5.0.1(postcss@8.5.28))
 
 packages:
 
@@ -1068,8 +1068,8 @@ packages:
     peerDependencies:
       postcss: ^8.2.1
 
-  postcss@8.5.26:
-    resolution: {integrity: sha512-u82N74LFzG8ca+dD8puPnplTXoGH4fTPpVGuIbt36G3qvNlkvfD0lEAZSxaly3KX8TS/L1A1gsCEmvKmBcVbkQ==}
+  postcss@8.5.28:
+    resolution: {integrity: sha512-RRuzqDtt5Y9h3quz5hWhK+TPnsmVs6WwSU6LkJMeY4HstUEDuYTG8UJSdawMRzmzAtV+KEoG8N3Qg2qLy5vM/A==}
     engines: {node: ^10 || ^12 || >=14}
 
   prelude-ls@1.2.1:
@@ -1797,10 +1797,10 @@ snapshots:
       '@typescript-eslint/types': 8.68.0
       eslint-visitor-keys: 5.0.1
 
-  '@vitejs/plugin-react@6.1.1(vite@8.2.2(sugarss@5.0.1(postcss@8.5.26)))':
+  '@vitejs/plugin-react@6.1.1(vite@8.2.2(sugarss@5.0.1(postcss@8.5.28)))':
     dependencies:
       '@rolldown/pluginutils': 1.0.1
-      vite: 8.2.2(sugarss@5.0.1(postcss@8.5.26))
+      vite: 8.2.2(sugarss@5.0.1(postcss@8.5.28))
 
   acorn-jsx@5.3.2(acorn@8.18.0):
     dependencies:
@@ -2178,40 +2178,40 @@ snapshots:
 
   picomatch@4.0.5: {}
 
-  postcss-js@4.1.0(postcss@8.5.26):
+  postcss-js@4.1.0(postcss@8.5.28):
     dependencies:
       camelcase-css: 2.0.1
-      postcss: 8.5.26
+      postcss: 8.5.28
 
-  postcss-mixins@12.1.2(postcss@8.5.26):
+  postcss-mixins@12.1.2(postcss@8.5.28):
     dependencies:
-      postcss: 8.5.26
-      postcss-js: 4.1.0(postcss@8.5.26)
-      postcss-simple-vars: 7.0.1(postcss@8.5.26)
-      sugarss: 5.0.1(postcss@8.5.26)
+      postcss: 8.5.28
+      postcss-js: 4.1.0(postcss@8.5.28)
+      postcss-simple-vars: 7.0.1(postcss@8.5.28)
+      sugarss: 5.0.1(postcss@8.5.28)
       tinyglobby: 0.2.17
 
-  postcss-nested@7.0.2(postcss@8.5.26):
+  postcss-nested@7.0.2(postcss@8.5.28):
     dependencies:
-      postcss: 8.5.26
+      postcss: 8.5.28
       postcss-selector-parser: 7.1.4
 
-  postcss-preset-mantine@1.18.0(postcss@8.5.26):
+  postcss-preset-mantine@1.18.0(postcss@8.5.28):
     dependencies:
-      postcss: 8.5.26
-      postcss-mixins: 12.1.2(postcss@8.5.26)
-      postcss-nested: 7.0.2(postcss@8.5.26)
+      postcss: 8.5.28
+      postcss-mixins: 12.1.2(postcss@8.5.28)
+      postcss-nested: 7.0.2(postcss@8.5.28)
 
   postcss-selector-parser@7.1.4:
     dependencies:
       cssesc: 3.0.0
       util-deprecate: 1.0.2
 
-  postcss-simple-vars@7.0.1(postcss@8.5.26):
+  postcss-simple-vars@7.0.1(postcss@8.5.28):
     dependencies:
-      postcss: 8.5.26
+      postcss: 8.5.28
 
-  postcss@8.5.26:
+  postcss@8.5.28:
     dependencies:
       nanoid: 3.3.18
       picocolors: 1.1.1
@@ -2317,9 +2317,9 @@ snapshots:
 
   source-map-js@1.2.1: {}
 
-  sugarss@5.0.1(postcss@8.5.26):
+  sugarss@5.0.1(postcss@8.5.28):
     dependencies:
-      postcss: 8.5.26
+      postcss: 8.5.28
 
   tabbable@6.5.0: {}
 
@@ -2384,16 +2384,16 @@ snapshots:
 
   util-deprecate@1.0.2: {}
 
-  vite@8.2.2(sugarss@5.0.1(postcss@8.5.26)):
+  vite@8.2.2(sugarss@5.0.1(postcss@8.5.28)):
     dependencies:
       lightningcss: 1.33.0
       picomatch: 4.0.5
-      postcss: 8.5.26
+      postcss: 8.5.28
       rolldown: 1.2.5
       tinyglobby: 0.2.17
     optionalDependencies:
       fsevents: 2.3.3
-      sugarss: 5.0.1(postcss@8.5.26)
+      sugarss: 5.0.1(postcss@8.5.28)
 
   which@2.0.2:
     dependencies:
