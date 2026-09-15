@@ -27,7 +27,7 @@ thiserror = "2"
 anyhow = "1"
 regex = "1"
 tiny_http = "0.12"
-dirs = "6"
+dirs = "7"
 walkdir = "2"
 uuid = { version = "1", features = ["v4"] }
 base64 = "0.23"
