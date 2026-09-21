@@ -43,7 +43,7 @@
     "eslint": "10.10.0",
     "eslint-plugin-react-hooks": "7.1.1",
     "eslint-plugin-react-refresh": "0.5.7",
-    "lefthook": "2.1.12",
+    "lefthook": "2.1.14",
     "postcss": "8.5.28",
     "postcss-preset-mantine": "1.18.0",
     "postcss-simple-vars": "7.0.1",
