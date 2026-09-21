@@ -23,7 +23,7 @@
     "@mantine/core": "9.4.2",
     "@mantine/dates": "9.4.2",
     "@mantine/hooks": "9.4.2",
-    "@tabler/icons-react": "3.46.0",
+    "@tabler/icons-react": "3.47.0",
     "@tauri-apps/api": "2.11.1",
     "@tauri-apps/plugin-dialog": "2.7.3",
     "@tauri-apps/plugin-opener": "2.5.5",
