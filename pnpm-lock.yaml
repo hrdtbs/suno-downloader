@@ -21,8 +21,8 @@ importers:
         specifier: 3.48.0
         version: 3.48.0(react@19.3.0)
       '@tauri-apps/api':
-        specifier: 2.11.1
-        version: 2.11.1
+        specifier: 2.12.0
+        version: 2.12.0
       '@tauri-apps/plugin-dialog':
         specifier: 2.8.0
         version: 2.8.0
@@ -407,9 +407,6 @@ packages:
 
   '@tabler/icons@3.48.0':
     resolution: {integrity: sha512-lQk06gVHNVBnJp0UOgtth54mcZBJM7rdYKsAxKOProj1bbSAx+/xiuOWfHlyvgdL3M+Y+I0HINrjHa3ygp8eXQ==}
-
-  '@tauri-apps/api@2.11.1':
-    resolution: {integrity: sha512-M2FPuYND2m+wh5hfW9ZpSdxMPdEJovPBWwoHJmwUpysTYNHaOkVFN419m/K0LIgjb/7KU2vBgsUepJWugQCvAA==}
 
   '@tauri-apps/api@2.12.0':
     resolution: {integrity: sha512-fUSxFX8VABYe9W9K5ROdEaKVkNUFRcMSRofjruvaxztXA+I0XnQHcYHF8m/a6iExRUxsUf0HsFWhPBuH9IgzJw==}
@@ -1629,8 +1626,6 @@ snapshots:
       react: 19.3.0
 
   '@tabler/icons@3.48.0': {}
-
-  '@tauri-apps/api@2.11.1': {}
 
   '@tauri-apps/api@2.12.0': {}
 
