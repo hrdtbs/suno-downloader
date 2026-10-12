@@ -31,7 +31,7 @@ dirs = "7"
 walkdir = "2"
 uuid = { version = "1", features = ["v4"] }
 base64 = "0.23"
-zip = "8"
+zip = "9"
 
 [lints.rust]
 unsafe_code = "forbid"
