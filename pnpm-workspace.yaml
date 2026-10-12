@@ -6,3 +6,11 @@ allowBuilds:
   lefthook: true
 minimumReleaseAge: 1440
 savePrefix: ''
+
+# Force patched transitive versions; Dependabot cannot unlock these via
+# `pnpm update --lockfile-only` (security_update_not_possible).
+overrides:
+  browserslist: 4.29.3
+  baseline-browser-mapping: 2.11.28
+  postcss-selector-parser: 7.1.6
+  source-map-js: 1.2.2
