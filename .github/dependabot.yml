@@ -17,6 +17,10 @@ updates:
       interval: weekly
       day: monday
     open-pull-requests-limit: 10
+    # Tauri 2 Linux (gtk 0.18 / wry) pins glib to the 0.18 line; GHSA needs >=0.20.
+    # Ignore until Tauri ships GTK4 / WebKitGTK 6 (Tauri 3).
+    ignore:
+      - dependency-name: glib
 
   - package-ecosystem: github-actions
     directory: /
